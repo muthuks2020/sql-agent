@@ -1,0 +1,167 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sql-agent-system"
+version = "1.0.0"
+description = "Multi-agent AI system for natural language to SQL conversion using AWS Strands and Bedrock"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "SQL Agent Contributors"}
+]
+maintainers = [
+    {name = "SQL Agent Contributors"}
+]
+keywords = [
+    "sql",
+    "ai",
+    "agent",
+    "natural-language",
+    "database",
+    "bedrock",
+    "claude",
+    "strands",
+    "aws",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0.0",
+    "boto3>=1.28.0",
+    "botocore>=1.31.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+mysql = ["mysql-connector-python>=8.0.0"]
+postgresql = ["psycopg2-binary>=2.9.0"]
+oracle = ["oracledb>=1.3.0"]
+strands = ["strands-agents>=0.1.0"]
+all-databases = [
+    "mysql-connector-python>=8.0.0",
+    "psycopg2-binary>=2.9.0",
+    "oracledb>=1.3.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings>=0.22.0",
+]
+all = [
+    "mysql-connector-python>=8.0.0",
+    "psycopg2-binary>=2.9.0",
+    "oracledb>=1.3.0",
+    "strands-agents>=0.1.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/sql-agent-system"
+Documentation = "https://github.com/yourusername/sql-agent-system#readme"
+Repository = "https://github.com/yourusername/sql-agent-system.git"
+Issues = "https://github.com/yourusername/sql-agent-system/issues"
+Changelog = "https://github.com/yourusername/sql-agent-system/blob/main/CHANGELOG.md"
+
+[project.scripts]
+sql-agent = "sql_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sql_agent = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+exclude = [
+    "tests/",
+    "docs/",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

@@ -1,0 +1,307 @@
+# Example Schema File for SQL Agent System
+# This file provides rich metadata about your database schema
+# to help the AI generate better SQL queries.
+
+database:
+  name: ecommerce
+  type: postgresql
+  domain: E-commerce
+  description: |
+    Online retail platform database with user accounts,
+    product catalog, and order management.
+
+tables:
+  users:
+    description: Customer accounts and authentication information
+    purpose: Stores user credentials and profile data for the platform
+    business_name: Customers
+    columns:
+      id:
+        type: integer
+        primary_key: true
+        description: Unique user identifier
+      
+      email:
+        type: varchar(255)
+        unique: true
+        semantic_type: email
+        description: User's email address, used for login and notifications
+      
+      name:
+        type: varchar(100)
+        semantic_type: name
+        description: User's full display name
+      
+      password_hash:
+        type: varchar(255)
+        semantic_type: password_hash
+        description: Bcrypt hashed password (never expose in queries)
+      
+      status:
+        type: varchar(20)
+        semantic_type: status
+        description: Account status
+        allowed_values: ["active", "inactive", "suspended", "deleted"]
+      
+      created_at:
+        type: timestamp
+        semantic_type: created_at
+        description: When the account was created
+      
+      last_login_at:
+        type: timestamp
+        description: Last successful login timestamp
+
+  products:
+    description: Product catalog with pricing and inventory
+    purpose: Central product information for the store
+    business_name: Products
+    columns:
+      id:
+        type: integer
+        primary_key: true
+        description: Unique product identifier
+      
+      sku:
+        type: varchar(50)
+        unique: true
+        description: Stock Keeping Unit - unique product code
+      
+      name:
+        type: varchar(200)
+        semantic_type: title
+        description: Product display name
+      
+      description:
+        type: text
+        semantic_type: description
+        description: Full product description for the listing
+      
+      price:
+        type: decimal(10,2)
+        semantic_type: price
+        description: Current selling price in USD
+      
+      cost:
+        type: decimal(10,2)
+        semantic_type: price
+        description: Product cost for margin calculations
+      
+      category_id:
+        type: integer
+        foreign_key: true
+        references_table: categories
+        references_column: id
+        description: Product category reference
+      
+      stock_quantity:
+        type: integer
+        semantic_type: quantity
+        description: Current inventory count
+      
+      is_active:
+        type: boolean
+        semantic_type: boolean_flag
+        description: Whether product is available for purchase
+      
+      created_at:
+        type: timestamp
+        semantic_type: created_at
+
+  categories:
+    description: Product category hierarchy
+    purpose: Organize products into browsable categories
+    is_lookup_table: true
+    columns:
+      id:
+        type: integer
+        primary_key: true
+      
+      name:
+        type: varchar(100)
+        description: Category display name
+      
+      slug:
+        type: varchar(100)
+        unique: true
+        description: URL-friendly category identifier
+      
+      parent_id:
+        type: integer
+        foreign_key: true
+        references_table: categories
+        references_column: id
+        description: Parent category for hierarchy (null for root)
+
+  orders:
+    description: Customer orders with totals and status tracking
+    purpose: Record all customer purchases
+    business_name: Purchases
+    columns:
+      id:
+        type: integer
+        primary_key: true
+        description: Unique order identifier
+      
+      order_number:
+        type: varchar(50)
+        unique: true
+        description: Human-readable order number (e.g., ORD-2024-001234)
+      
+      user_id:
+        type: integer
+        foreign_key: true
+        references_table: users
+        references_column: id
+        description: Customer who placed the order
+      
+      status:
+        type: varchar(20)
+        semantic_type: status
+        description: Order fulfillment status
+        allowed_values: ["pending", "paid", "processing", "shipped", "delivered", "cancelled", "refunded"]
+      
+      subtotal:
+        type: decimal(10,2)
+        semantic_type: price
+        description: Sum of line items before tax/shipping
+      
+      tax:
+        type: decimal(10,2)
+        semantic_type: price
+        description: Calculated tax amount
+      
+      shipping:
+        type: decimal(10,2)
+        semantic_type: price
+        description: Shipping cost
+      
+      total:
+        type: decimal(10,2)
+        semantic_type: price
+        description: Final order total (subtotal + tax + shipping)
+      
+      shipping_address:
+        type: text
+        semantic_type: address
+        description: Delivery address (JSON or formatted text)
+      
+      created_at:
+        type: timestamp
+        semantic_type: created_at
+        description: When order was placed
+      
+      updated_at:
+        type: timestamp
+        semantic_type: updated_at
+
+  order_items:
+    description: Individual line items within an order
+    purpose: Track products and quantities in each order
+    is_junction_table: false  # It has additional data beyond FK relationship
+    columns:
+      id:
+        type: integer
+        primary_key: true
+      
+      order_id:
+        type: integer
+        foreign_key: true
+        references_table: orders
+        references_column: id
+        description: Parent order
+      
+      product_id:
+        type: integer
+        foreign_key: true
+        references_table: products
+        references_column: id
+        description: Product purchased
+      
+      quantity:
+        type: integer
+        semantic_type: quantity
+        description: Number of units ordered
+      
+      unit_price:
+        type: decimal(10,2)
+        semantic_type: price
+        description: Price per unit at time of purchase
+      
+      line_total:
+        type: decimal(10,2)
+        semantic_type: price
+        description: quantity * unit_price
+
+# Explicit relationship definitions
+relationships:
+  - name: user_orders
+    from: orders.user_id
+    to: users.id
+    type: many_to_one
+    description: Each order belongs to one customer; customers can have many orders
+  
+  - name: order_items_order
+    from: order_items.order_id
+    to: orders.id
+    type: many_to_one
+    description: Each order can have multiple line items
+  
+  - name: order_items_product
+    from: order_items.product_id
+    to: products.id
+    type: many_to_one
+    description: Each line item references one product
+  
+  - name: product_category
+    from: products.category_id
+    to: categories.id
+    type: many_to_one
+    description: Each product belongs to one category
+  
+  - name: category_parent
+    from: categories.parent_id
+    to: categories.id
+    type: many_to_one
+    description: Categories can have parent categories (self-referential)
+
+# Business context for better query understanding
+business_context:
+  domain: E-commerce / Online Retail
+  description: |
+    This database powers an online retail platform where customers
+    can browse products, add them to cart, and place orders.
+  
+  terminology:
+    customer: users
+    purchase: orders
+    item: products
+    basket: order_items
+    buyer: users
+    transaction: orders
+    merchandise: products
+  
+  key_entities:
+    - users
+    - products
+    - orders
+  
+  common_queries:
+    revenue_by_month: |
+      SELECT DATE_TRUNC('month', created_at) as month, SUM(total) as revenue
+      FROM orders WHERE status NOT IN ('cancelled', 'refunded')
+      GROUP BY 1 ORDER BY 1
+    
+    top_customers: |
+      SELECT u.name, COUNT(o.id) as order_count, SUM(o.total) as total_spent
+      FROM users u JOIN orders o ON u.id = o.user_id
+      GROUP BY u.id ORDER BY total_spent DESC LIMIT 10
+    
+    low_stock_products: |
+      SELECT * FROM products WHERE stock_quantity < 10 AND is_active = true
+  
+  business_rules:
+    - "Orders can only be cancelled if status is 'pending' or 'paid'"
+    - "Deleted users (status='deleted') should be excluded from active customer reports"
+    - "Product margin = (price - cost) / price * 100"
+    - "A customer is considered 'active' if they logged in within the last 30 days"

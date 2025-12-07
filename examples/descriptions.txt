@@ -1,0 +1,125 @@
+# Database Documentation
+# E-Commerce Platform Database
+
+This document describes the structure and purpose of our e-commerce database.
+
+## Database Overview
+
+This is the main database for our online retail platform. It handles user accounts,
+product catalog management, and order processing. The system supports multiple
+product categories and tracks complete order history with line items.
+
+## Tables
+
+### users
+The users table stores all customer account information for the platform.
+This is the central table for customer data and authentication.
+
+- id: Unique identifier for each user (primary key)
+- email: User's email address, used for login and notifications (must be unique)
+- name: Full display name of the customer
+- password_hash: Encrypted password (never expose in queries or reports)
+- status: Account status - can be 'active', 'inactive', 'suspended', or 'deleted'
+- created_at: Timestamp when the account was created
+- last_login_at: When the user last logged into the system
+
+### products
+The products table contains our complete product catalog with pricing and inventory.
+
+- id: Unique product identifier
+- sku: Stock Keeping Unit - our internal product code (unique)
+- name: Product display name shown to customers
+- description: Full product description for listings
+- price: Current selling price in USD
+- cost: Our cost for the product (for margin calculations)
+- category_id: Links to the categories table
+- stock_quantity: Current inventory count
+- is_active: Whether the product is available for purchase (true/false)
+- created_at: When the product was added to catalog
+
+### categories
+Product categories for organizing our catalog. Categories can be nested
+with parent-child relationships.
+
+- id: Category identifier
+- name: Display name for the category
+- slug: URL-friendly version of the name
+- parent_id: Links to parent category (null for top-level categories)
+
+### orders
+Customer orders with totals and fulfillment status.
+
+- id: Order identifier
+- order_number: Human-readable order number (e.g., ORD-2024-001234)
+- user_id: Links to the users table - the customer who placed this order
+- status: Order status - 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', or 'refunded'
+- subtotal: Sum of line items before tax and shipping
+- tax: Calculated tax amount
+- shipping: Shipping cost
+- total: Final order total (subtotal + tax + shipping)
+- shipping_address: Delivery address
+- created_at: When the order was placed
+- updated_at: Last modification timestamp
+
+### order_items
+Individual line items within an order. Each row represents one product
+in the order with its quantity and price at time of purchase.
+
+- id: Line item identifier
+- order_id: Links to the orders table
+- product_id: Links to the products table
+- quantity: Number of units ordered
+- unit_price: Price per unit at time of purchase
+- line_total: Calculated total (quantity × unit_price)
+
+## Relationships
+
+- users -> orders via user_id (one customer can have many orders)
+- orders -> order_items via order_id (one order has many line items)
+- products -> order_items via product_id (one product can appear in many orders)
+- categories -> products via category_id (one category has many products)
+- categories -> categories via parent_id (self-referential for hierarchy)
+
+## Business Terms
+
+When users ask about data, they may use business terms instead of table names:
+
+- "customer" or "buyer" refers to users
+- "purchase" or "transaction" refers to orders
+- "item" or "merchandise" refers to products
+- "basket" or "cart items" refers to order_items
+
+## Common Queries
+
+Here are some typical queries our team runs:
+
+### Monthly Revenue
+```sql
+SELECT DATE_TRUNC('month', created_at) as month, SUM(total) as revenue
+FROM orders 
+WHERE status NOT IN ('cancelled', 'refunded')
+GROUP BY 1 ORDER BY 1
+```
+
+### Top Customers by Spending
+```sql
+SELECT u.name, COUNT(o.id) as orders, SUM(o.total) as total_spent
+FROM users u 
+JOIN orders o ON u.id = o.user_id
+GROUP BY u.id 
+ORDER BY total_spent DESC
+```
+
+### Low Stock Alert
+```sql
+SELECT * FROM products 
+WHERE stock_quantity < 10 AND is_active = true
+```
+
+## Business Rules
+
+1. Orders can only be cancelled if status is 'pending' or 'paid'
+2. Deleted users (status='deleted') should be excluded from customer reports
+3. Product margin = (price - cost) / price * 100
+4. A customer is "active" if they logged in within the last 30 days
+5. "High value customer" = total lifetime orders > $1000
