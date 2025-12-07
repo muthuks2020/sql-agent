@@ -319,13 +319,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-- GitHub Issues: [Report a bug](https://github.com/YOUR_USERNAME/sql-agent/issues)
-- Discussions: [Ask questions](https://github.com/YOUR_USERNAME/sql-agent/discussions)
+- GitHub Issues: [Report a bug](https://github.com/muthuks2020/sql-agent/issues)
+- Discussions: [Ask questions](https://github.com/muthuks2020/sql-agent/discussions)
 
 ---
 
 **If this project helps you, please give it a star!**
 
-## Keywords
-
-`natural-language-to-sql` `text-to-sql` `nl2sql` `text2sql` `sql-generator` `ai-sql` `llm-sql` `claude-sql` `aws-bedrock` `sql-agent` `query-generator` `database-ai` `sql-automation` `self-healing-sql` `multi-database` `mysql` `postgresql` `oracle` `sqlite`
