@@ -41,7 +41,7 @@ pip install sql-agent
 Or install from source:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/sql-agent.git
+git clone https://github.com/muthuks2020/sql-agent.git
 cd sql-agent
 pip install -e .
 ```
