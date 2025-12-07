@@ -1,0 +1,100 @@
+# SQL Agent System Configuration
+# ================================
+# Copy this file to config.yaml and modify as needed
+
+# Database Configuration
+database:
+  # Database type: mysql, postgresql, oracle, sqlite
+  type: sqlite
+  
+  # Connection settings (not needed for SQLite)
+  host: localhost
+  port: 3306
+  database: myapp
+  username: dbuser
+  # password: set via DB_PASSWORD environment variable
+  
+  # Connection pool settings
+  connection_pool_size: 10
+  connection_timeout: 30
+  query_timeout: 60
+  
+  # SSL settings
+  ssl_enabled: false
+  ssl_ca_path: null
+  
+  # SQLite-specific
+  sqlite_path: ./data/app.db
+  
+  # Oracle-specific
+  oracle_service_name: null
+  oracle_sid: null
+
+# LLM Configuration
+llm:
+  # Provider: bedrock_claude
+  provider: bedrock_claude
+  
+  # Claude model ID
+  model_id: anthropic.claude-3-5-sonnet-20241022-v2:0
+  
+  # AWS settings
+  aws_region: us-east-1
+  # aws_access_key_id: set via AWS_ACCESS_KEY_ID
+  # aws_secret_access_key: set via AWS_SECRET_ACCESS_KEY
+  
+  # Generation parameters
+  max_tokens: 4096
+  temperature: 0.1
+  top_p: 0.9
+  
+  # Retry settings
+  retry_attempts: 3
+  retry_delay: 1.0
+  request_timeout: 120
+
+# Agent Configuration
+agent:
+  # Maximum self-healing iterations
+  max_iterations: 5
+  
+  # Enable self-healing on validation failure
+  enable_self_healing: true
+  
+  # Validation strictness: low, medium, high
+  validation_strictness: medium
+  
+  # Include explanations in generated SQL
+  include_explanation: true
+  
+  # Enable parallel validation (experimental)
+  parallel_validation: false
+  
+  # Schema caching
+  cache_schema: true
+  schema_cache_ttl: 300
+
+# Metrics Configuration
+metrics:
+  enabled: true
+  export_interval: 60
+  include_latency_histograms: true
+  include_token_counts: true
+  
+  # StatsD export (optional)
+  statsd_host: null
+  statsd_port: 8125
+  
+  # Prometheus export (optional)
+  prometheus_port: null
+
+# Load Test Configuration
+load_test:
+  concurrent_users: 10
+  spawn_rate: 1.0
+  run_time: 5m
+  target_rps: null
+
+# Logging
+log_level: INFO
+debug_mode: false
